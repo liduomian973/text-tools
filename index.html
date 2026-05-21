@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="z_gucT7y1CmYgrUNJj4_kkFppLyldtyDdzfd2W_OWag" />
+  <title>文字工具箱 — 免费在线文字处理工具</title>
+  <meta name="description" content="免费在线文字工具：字数统计、去除空格、大小写转换、JSON格式化。无需注册，即开即用。" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --accent: #6366f1;
+      --accent-light: #eef2ff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --success: #10b981;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── 顶部 ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .tagline {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    /* ── 布局 ── */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* ── 工具选项卡 ── */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .tab {
+      padding: 0.5rem 1.2rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.88rem;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+
+    .tab:hover { border-color: var(--accent); color: var(--accent); }
+
+    .tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* ── 工具面板 ── */
+    .tool-panel {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+
+    .tool-panel.active { display: block; }
+
+    .tool-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+
+    .tool-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 1.2rem;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      resize: vertical;
+      outline: none;
+      background: var(--bg);
+      color: var(--text);
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus { border-color: var(--accent); }
+
+    /* ── 操作栏 ── */
+    .actions {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin: 1rem 0;
+    }
+
+    .btn {
+      padding: 0.5rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: #4f46e5; }
+
+    .btn-ghost {
+      background: var(--bg);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    .btn-copy {
+      background: var(--success);
+      color: #fff;
+    }
+
+    /* ── 统计数字 ── */
+    .stats {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .stat-box {
+      flex: 1;
+      min-width: 120px;
+      background: var(--accent-light);
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    /* ── 输出框 ── */
+    .output {
+      width: 100%;
+      min-height: 140px;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-family: 'Consolas', monospace;
+      background: #f1f5f9;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin-top: 1rem;
+    }
+
+    /* ── 提示 ── */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1e293b;
+      color: #fff;
+      padding: 0.6rem 1.4rem;
+      border-radius: 100px;
+      font-size: 0.88rem;
+      transition: transform 0.3s;
+      z-index: 999;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── 页脚 ── */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">📝 文字工具箱</div>
+  <div class="tagline">免费在线文字处理，无需注册</div>
+</header>
+
+<div class="container">
+
+  <!-- 选项卡 -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('count')">字数统计</button>
+    <button class="tab" onclick="switchTab('space')">去除空格</button>
+    <button class="tab" onclick="switchTab('case')">大小写转换</button>
+    <button class="tab" onclick="switchTab('json')">JSON 格式化</button>
+    <button class="tab" onclick="switchTab('dup')">去除重复行</button>
+  </div>
+
+  <!-- 字数统计 -->
+  <div class="tool-panel active" id="panel-count">
+    <div class="tool-title">字数统计</div>
+    <div class="tool-desc">实时统计字符数、汉字数、单词数、行数。</div>
+    <textarea id="count-input" placeholder="在这里粘贴或输入文字..." oninput="countChars()"></textarea>
+    <div class="stats">
+      <div class="stat-box"><div class="stat-num" id="c-chars">0</div><div class="stat-label">总字符</div></div>
+      <div class="stat-box"><div class="stat-num" id="c-chinese">0</div><div class="stat-label">汉字</div></div>
+      <div class="stat-box"><div class="stat-num" id="c-words">0</div><div class="stat-label">英文单词</div></div>
+      <div class="stat-box"><div class="stat-num" id="c-lines">0</div><div class="stat-label">行数</div></div>
+      <div class="stat-box"><div class="stat-num" id="c-nospace">0</div><div class="stat-label">去空格字符</div></div>
+    </div>
+  </div>
+
+  <!-- 去除空格 -->
+  <div class="tool-panel" id="panel-space">
+    <div class="tool-title">去除空格</div>
+    <div class="tool-desc">去除文字中多余的空格、换行、全角空格等。</div>
+    <textarea id="space-input" placeholder="粘贴文字..."></textarea>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="removeSpaces('all')">去除全部空格</button>
+      <button class="btn btn-ghost" onclick="removeSpaces('extra')">合并多余空格</button>
+      <button class="btn btn-ghost" onclick="removeSpaces('line')">去除空白行</button>
+      <button class="btn btn-ghost" onclick="removeSpaces('trim')">去除首尾空格</button>
+    </div>
+    <div class="output" id="space-output">处理结果将显示在这里...</div>
+    <div class="actions">
+      <button class="btn btn-copy" onclick="copyOutput('space-output')">复制结果</button>
+      <button class="btn btn-ghost" onclick="clearPanel('space')">清空</button>
+    </div>
+  </div>
+
+  <!-- 大小写转换 -->
+  <div class="tool-panel" id="panel-case">
+    <div class="tool-title">大小写转换</div>
+    <div class="tool-desc">英文字母大小写互转，支持多种格式。</div>
+    <textarea id="case-input" placeholder="粘贴英文文字..."></textarea>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="convertCase('upper')">全部大写</button>
+      <button class="btn btn-ghost" onclick="convertCase('lower')">全部小写</button>
+      <button class="btn btn-ghost" onclick="convertCase('title')">首字母大写</button>
+      <button class="btn btn-ghost" onclick="convertCase('camel')">camelCase</button>
+      <button class="btn btn-ghost" onclick="convertCase('snake')">snake_case</button>
+    </div>
+    <div class="output" id="case-output">处理结果将显示在这里...</div>
+    <div class="actions">
+      <button class="btn btn-copy" onclick="copyOutput('case-output')">复制结果</button>
+      <button class="btn btn-ghost" onclick="clearPanel('case')">清空</button>
+    </div>
+  </div>
+
+  <!-- JSON 格式化 -->
+  <div class="tool-panel" id="panel-json">
+    <div class="tool-title">JSON 格式化</div>
+    <div class="tool-desc">格式化 JSON 数据，或压缩为一行。</div>
+    <textarea id="json-input" placeholder='粘贴 JSON 数据，例如：{"name":"张三","age":18}'></textarea>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="formatJSON('pretty')">格式化</button>
+      <button class="btn btn-ghost" onclick="formatJSON('min')">压缩为一行</button>
+    </div>
+    <div class="output" id="json-output">处理结果将显示在这里...</div>
+    <div class="actions">
+      <button class="btn btn-copy" onclick="copyOutput('json-output')">复制结果</button>
+      <button class="btn btn-ghost" onclick="clearPanel('json')">清空</button>
+    </div>
+  </div>
+
+  <!-- 去除重复行 -->
+  <div class="tool-panel" id="panel-dup">
+    <div class="tool-title">去除重复行</div>
+    <div class="tool-desc">删除文本中完全相同的行，保留第一次出现的内容。</div>
+    <textarea id="dup-input" placeholder="每行一条内容，重复行将被删除..."></textarea>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="removeDups()">去除重复行</button>
+      <button class="btn btn-ghost" onclick="removeDups(true)">去除重复并排序</button>
+    </div>
+    <div class="output" id="dup-output">处理结果将显示在这里...</div>
+    <div class="actions">
+      <button class="btn btn-copy" onclick="copyOutput('dup-output')">复制结果</button>
+      <button class="btn btn-ghost" onclick="clearPanel('dup')">清空</button>
+    </div>
+  </div>
+
+</div>
+
+<footer>文字工具箱 · 免费使用 · 数据不上传服务器</footer>
+
+<div class="toast" id="toast">已复制到剪贴板</div>
+
+<script>
+  // ── 切换工具 ──
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      const names = ['count','space','case','json','dup'];
+      t.classList.toggle('active', names[i] === name);
+    });
+    document.querySelectorAll('.tool-panel').forEach(p => {
+      p.classList.toggle('active', p.id === 'panel-' + name);
+    });
+  }
+
+  // ── 字数统计 ──
+  function countChars() {
+    const text = document.getElementById('count-input').value;
+    document.getElementById('c-chars').textContent = text.length;
+    document.getElementById('c-chinese').textContent = (text.match(/[一-龥]/g) || []).length;
+    document.getElementById('c-words').textContent = (text.match(/\b[a-zA-Z]+\b/g) || []).length;
+    document.getElementById('c-lines').textContent = text ? text.split('\n').length : 0;
+    document.getElementById('c-nospace').textContent = text.replace(/\s/g, '').length;
+  }
+
+  // ── 去除空格 ──
+  function removeSpaces(mode) {
+    const text = document.getElementById('space-input').value;
+    let result = text;
+    if (mode === 'all')   result = text.replace(/[\s　]/g, '');
+    if (mode === 'extra') result = text.replace(/[ \t　]+/g, ' ').trim();
+    if (mode === 'line')  result = text.split('\n').filter(l => l.trim()).join('\n');
+    if (mode === 'trim')  result = text.split('\n').map(l => l.trim()).join('\n');
+    document.getElementById('space-output').textContent = result;
+  }
+
+  // ── 大小写 ──
+  function convertCase(mode) {
+    const text = document.getElementById('case-input').value;
+    let result = text;
+    if (mode === 'upper') result = text.toUpperCase();
+    if (mode === 'lower') result = text.toLowerCase();
+    if (mode === 'title') result = text.replace(/\b\w/g, c => c.toUpperCase());
+    if (mode === 'camel') result = text.toLowerCase().replace(/[_\s-]+(\w)/g, (_, c) => c.toUpperCase());
+    if (mode === 'snake') result = text.replace(/([A-Z])/g, '_$1').replace(/[\s-]+/g, '_').toLowerCase().replace(/^_/, '');
+    document.getElementById('case-output').textContent = result;
+  }
+
+  // ── JSON ──
+  function formatJSON(mode) {
+    const text = document.getElementById('json-input').value.trim();
+    try {
+      const obj = JSON.parse(text);
+      document.getElementById('json-output').textContent =
+        mode === 'pretty' ? JSON.stringify(obj, null, 2) : JSON.stringify(obj);
+    } catch(e) {
+      document.getElementById('json-output').textContent = '❌ JSON 格式错误：' + e.message;
+    }
+  }
+
+  // ── 去重 ──
+  function removeDups(sort = false) {
+    const lines = document.getElementById('dup-input').value.split('\n');
+    let result = [...new Set(lines)];
+    if (sort) result = result.sort();
+    document.getElementById('dup-output').textContent = result.join('\n');
+  }
+
+  // ── 复制 ──
+  function copyOutput(id) {
+    const text = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(text).then(() => showToast('已复制到剪贴板'));
+  }
+
+  function clearPanel(name) {
+    document.getElementById(name + '-input').value = '';
+    document.getElementById(name + '-output').textContent = '处理结果将显示在这里...';
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+</script>
+</body>
+</html>
